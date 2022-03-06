@@ -1,20 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Post from './Post';
-function App() {
-  const [posts, setPosts] = useState([
-    {
-      username: "topher",
-      caption: "ayy",
-      imageUrl: "https://www.instagram.com/static/images/web/mobile_nav_type_logo.png/735145cfe0a4.png"
-    },
-    {
-      username: "bubba",
-      caption: "dink",
-      imageUrl: "https://www.instagram.com/static/images/web/mobile_nav_type_logo.png/735145cfe0a4.png"
-    }
-  ]);
+import { db } from "./firebase";
+import { query, collection, addDoc, getDocs, onSnapshot } from "firebase/firestore"; 
 
+function App() {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const q = query(collection(db, "posts"));
+      const update = onSnapshot(q, (querySnapshot) => {
+        setPosts(querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          post: doc.data()
+        })))
+
+      })
+    }
+    fetchData()
+
+  }, [])
   return (
     <div className="App">
         <div className='app__header'>
@@ -28,8 +34,8 @@ function App() {
 
         {/* Posts */}
         {
-          posts.map(post => (
-            <Post username={post.username} caption={post.caption} imageUrl={post.imageUrl}/>
+          posts.map(({id, post}) => (
+            <Post key={id} username={post.username} caption={post.caption} imageUrl={post.imageUrl}/>
           ))
         }
 
